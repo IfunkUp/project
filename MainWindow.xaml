@@ -5,35 +5,36 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyncWPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid Name="grdMain" Loaded="grdMain_Loaded">
+        Title="MainWindow" Height="350" Width="525"
+        x:Name="Control">
+    <Grid Name="grdMain">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
-            
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
+        
         <Button Content="start incremental sync" Click="IncrementalSync_Click" Margin="5"/>
         <Button Content="start full sync" Click="FullSync_Click" Margin="5" Grid.Column="1"/>
         <DockPanel Grid.Row="1" LastChildFill="True" Grid.ColumnSpan="2">
             <TextBlock Text="Start date" Margin="5"/>
-            <DatePicker Name="dpStart" Margin="5" SelectedDateChanged="dpStart_SelectedDateChanged" DisplayDate="{Binding m_date,Mode=TwoWay}"/>
-            <ProgressBar Width="auto" HorizontalAlignment="Stretch" Margin="5" x:Name="pbUpdate" />
+            <DatePicker  Margin="5" SelectedDate="{Binding ElementName=Control, Path=SelectedDate, Mode=TwoWay}" FirstDayOfWeek="Monday"/>
+            <ProgressBar Width="auto" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=ProgressValue}" Maximum="{Binding ElementName=Control, Path=Maximum}"  />
 
         </DockPanel>
-        <TextBlock Grid.Row="2" Margin="5" Grid.ColumnSpan="2" Name="txtFeetback" Text="{Binding Path=Comment}">
-            
+        <TextBlock Grid.Row="2" Margin="5" Grid.ColumnSpan="2"  Text="{Binding ElementName=Control, Path=Comment}">
+
         </TextBlock>
         <StatusBar Grid.Row="3" Grid.ColumnSpan="2">
             <StatusBarItem>
                 <Label Name="lblDate"/>
             </StatusBarItem>
         </StatusBar>
-       
+
     </Grid>
 </Window>

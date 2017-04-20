@@ -22,6 +22,7 @@ using SyncWPF.workers;
 using System.Threading;
 using System.Windows.Threading;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace SyncWPF
 {
@@ -30,50 +31,92 @@ namespace SyncWPF
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-      //  string m_UserName = "info@sms-timing.com";
-      //  string m_PassWord = "smssms123";
-      //  string m_Url = "http://smstiming.zendesk.com";
-        DateTimeOffset m_date = DateTimeOffset.Now;
-        private ProgressBar bar = null;
+        //  string m_UserName = "info@sms-timing.com";
+        //  string m_PassWord = "smssms123";
+        //  string m_Url = "http://smstiming.zendesk.com";
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        private string _comment;
 
-        public string Comment
+        private DateTime? m_SelectedDate = DateTime.Now;
+
+        public DateTime? SelectedDate
         {
-            get => _comment;
+            get => m_SelectedDate;
             set
             {
-                if (value != _comment)
-                {
-                    _comment = value;
-                    OnPropertyChanged("Comment");
-                }
+                m_SelectedDate = value;
+                OnPropertyChanged();
             }
         }
-private void OnPropertyChanged(string v)
+
+        public DateTimeOffset SelectedDateOffset => GetDateTimeOffset(SelectedDate);
+
+        DateTimeOffset GetDateTimeOffset(DateTime? aDateTime)
         {
-            if (PropertyChanged != null)
+            if (aDateTime == null)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(v));
+                return (DateTimeOffset)DateTime.Now;
+            }
+
+            return (DateTimeOffset)aDateTime;
+        }
+
+        private string m_Comment;
+        public string Comment
+        {
+            get => m_Comment;
+            set
+            {
+                m_Comment = value;
+                OnPropertyChanged();
             }
         }
+
+        private double m_Maximum;
+
+        public double Maximum
+        {
+            get => m_Maximum;
+            set
+            {
+                m_Maximum = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double m_ProgressValue;
+
+        public double ProgressValue
+        {
+            get => m_ProgressValue;
+            set
+            {
+                m_ProgressValue = value;
+                OnPropertyChanged();
+            }
+        }
+
+        #region propertyChanged     
+        public event PropertyChangedEventHandler PropertyChanged;
+        // Check the attribute in the following line :
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+        #endregion
 
         public MainWindow()
         {
-           
             InitializeComponent();
         }
 
 
         private async void DownloadAndSaveAll()
         {
-            
             GetOrganizations();
-                 
-            
-            var users = await ZendeskHelper.GetUsers();
 
+            var users = await ZendeskHelper.GetUsers();
             foreach (var item in users)
             {
                 Firebirdhelper.SaveUser(item);
@@ -84,19 +127,14 @@ private void OnPropertyChanged(string v)
             {
                 Firebirdhelper.SaveTicket(item);
             }
-
         }
 
-        private void DispOp_Completed(object sender, EventArgs e)
-        {
-            // nothing
-            return;
-        }
 
-        private async void DownloadAndSaveIncremental(DateTimeOffset givenDate)
+        private async void DownloadAndSaveIncremental()
         {
-            var tickets = await ZendeskHelper.GetLastTickets(givenDate);
+            var tickets = await ZendeskHelper.GetLastTickets(SelectedDateOffset);
             var commentList = new List<Comment>();
+
             foreach (var item in tickets)
             {
                 commentList.AddRange(ZendeskHelper.GetComment(DataHelper.ConvertToPrimitive(item.Id)));
@@ -105,7 +143,6 @@ private void OnPropertyChanged(string v)
                     Firebirdhelper.SaveComment(comment, DataHelper.ConvertToPrimitive(item.Id));
                 }
                 Firebirdhelper.SaveTicket(item);
-               
             }
         }
 
@@ -118,68 +155,30 @@ private void OnPropertyChanged(string v)
             {
                 Firebirdhelper.SaveSatisfaction(item);
             }
-
-
-        }
-
-        private void dpStart_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
-        {
-            m_date = dpStart.SelectedDate.Value.Date;
-        }
-
-        private void grdMain_Loaded(object sender, RoutedEventArgs e)
-        {
-            dpStart.SelectedDate = m_date.Date;
         }
 
         private void IncrementalSync_Click(object sender, RoutedEventArgs e)
         {
-            m_date = dpStart.SelectedDate.Value;
-            DownloadAndSaveIncremental(m_date);
+            DownloadAndSaveIncremental();
         }
 
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
-              DownloadAndSaveAll();
-            
+            //  DownloadAndSaveAll();
+            Task.Factory.StartNew(() => GetOrganizations());
         }
 
         public async void GetOrganizations()
         {
-            
             var organizations = await ZendeskHelper.GetOrganisations();
-            
-            pbUpdate.Maximum = organizations.Count()/100;
-            txtFeetback.DataContext = this;
+            Maximum = organizations.Count();
+            ProgressValue = 1;
             foreach (var item in organizations)
             {
-
-                Thread T = new Thread(
-                    new ThreadStart(
-                        delegate ()
-                        {
-                            DispatcherOperation dispOp = pbUpdate.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(
-                                 delegate ()
-                                 {
-
-                                     Firebirdhelper.SaveOrganization(item);
-                                     pbUpdate.Value++;
-                                     Comment = "busy transferring file " + pbUpdate.Value.ToString() + " of " + organizations.Count();
-                                     Thread.Sleep(100);
-
-                                 }));
-                            dispOp.Completed += new EventHandler(DispOp_Completed);
-
-                        }));
-                T.Start();
+                Firebirdhelper.SaveOrganization(item);
+                Comment = "importing  " + item.Name + " to the database (" + ProgressValue.ToString() + "/" + Maximum.ToString() + ")";
+                ProgressValue++;
             }
         }
     }
 }
-/*
-    automatisch de incremental doen en de volledige enkel manueel
-    
-
-     
-     
-     */
