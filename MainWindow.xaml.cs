@@ -19,6 +19,8 @@ using ZendeskApi_v2.Models.Users;
 using SatisfactionRating = ZendeskApi_v2.Models.Satisfaction.SatisfactionRating;
 using Category = ZendeskApi_v2.Models.Categories.Category;
 using SyncWPF.workers;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace SyncWPF
 {
@@ -46,11 +48,25 @@ namespace SyncWPF
         private async void DownloadAndSaveAll()
         {
 
-            var organizations = await ZendeskHelper.GetOrganisations();
-            foreach (var item in organizations)
-            {
-                Firebirdhelper.SaveOrganization(item);
-            }
+            Thread T = new Thread(
+                new ThreadStart(
+                    delegate ()
+                    {
+                        DispatcherOperation dispOp = pbUpdate.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(
+                             async delegate ()
+                            {
+                                var organizations = await ZendeskHelper.GetOrganisations();
+                                foreach (var item in organizations)
+                                {
+                                    Firebirdhelper.SaveOrganization(item);
+                                }
+                            }));
+                        dispOp.Completed += new EventHandler(DispOp_Completed);
+
+                    }));
+            T.Start();
+                 
+            
             var users = await ZendeskHelper.GetUsers();
 
             foreach (var item in users)
@@ -65,6 +81,13 @@ namespace SyncWPF
             }
 
         }
+
+        private void DispOp_Completed(object sender, EventArgs e)
+        {
+            // nothing
+            return;
+        }
+
         private async void DownloadAndSaveIncremental(DateTimeOffset givenDate)
         {
             var tickets = await ZendeskHelper.GetLastTickets(givenDate);
@@ -112,7 +135,7 @@ namespace SyncWPF
 
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
-            //   DownloadAndSaveAll();
+              DownloadAndSaveAll();
             
         }
     }
