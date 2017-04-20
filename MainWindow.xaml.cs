@@ -21,22 +21,43 @@ using Category = ZendeskApi_v2.Models.Categories.Category;
 using SyncWPF.workers;
 using System.Threading;
 using System.Windows.Threading;
+using System.ComponentModel;
 
 namespace SyncWPF
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
       //  string m_UserName = "info@sms-timing.com";
       //  string m_PassWord = "smssms123";
       //  string m_Url = "http://smstiming.zendesk.com";
         DateTimeOffset m_date = DateTimeOffset.Now;
         private ProgressBar bar = null;
-        
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        private string _comment;
 
+        public string Comment
+        {
+            get => _comment;
+            set
+            {
+                if (value != _comment)
+                {
+                    _comment = value;
+                    OnPropertyChanged("Comment");
+                }
+            }
+        }
+private void OnPropertyChanged(string v)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(v));
+            }
+        }
 
         public MainWindow()
         {
@@ -47,24 +68,8 @@ namespace SyncWPF
 
         private async void DownloadAndSaveAll()
         {
-
-            Thread T = new Thread(
-                new ThreadStart(
-                    delegate ()
-                    {
-                        DispatcherOperation dispOp = pbUpdate.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(
-                             async delegate ()
-                            {
-                                var organizations = await ZendeskHelper.GetOrganisations();
-                                foreach (var item in organizations)
-                                {
-                                    Firebirdhelper.SaveOrganization(item);
-                                }
-                            }));
-                        dispOp.Completed += new EventHandler(DispOp_Completed);
-
-                    }));
-            T.Start();
+            
+            GetOrganizations();
                  
             
             var users = await ZendeskHelper.GetUsers();
@@ -137,6 +142,37 @@ namespace SyncWPF
         {
               DownloadAndSaveAll();
             
+        }
+
+        public async void GetOrganizations()
+        {
+            
+            var organizations = await ZendeskHelper.GetOrganisations();
+            
+            pbUpdate.Maximum = organizations.Count()/100;
+            txtFeetback.DataContext = this;
+            foreach (var item in organizations)
+            {
+
+                Thread T = new Thread(
+                    new ThreadStart(
+                        delegate ()
+                        {
+                            DispatcherOperation dispOp = pbUpdate.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(
+                                 delegate ()
+                                 {
+
+                                     Firebirdhelper.SaveOrganization(item);
+                                     pbUpdate.Value++;
+                                     Comment = "busy transferring file " + pbUpdate.Value.ToString() + " of " + organizations.Count();
+                                     Thread.Sleep(100);
+
+                                 }));
+                            dispOp.Completed += new EventHandler(DispOp_Completed);
+
+                        }));
+                T.Start();
+            }
         }
     }
 }
