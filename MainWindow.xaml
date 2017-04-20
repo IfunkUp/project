@@ -24,7 +24,7 @@
         <DockPanel Grid.Row="1" LastChildFill="True" Grid.ColumnSpan="2">
             <TextBlock Text="Start date" Margin="5"/>
             <DatePicker  Margin="5" SelectedDate="{Binding ElementName=Control, Path=SelectedDate, Mode=TwoWay}" FirstDayOfWeek="Monday"/>
-            <ProgressBar Width="auto" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=ProgressValue}" Maximum="{Binding ElementName=Control, Path=Maximum}"  />
+            <ProgressBar Width="auto" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=ProgressValue}" Maximum="{Binding ElementName=Control, Path=Maximum}" Foreground="{Binding ElementName=Control, Path=Color}" />
 
         </DockPanel>
         <TextBlock Grid.Row="2" Margin="5" Grid.ColumnSpan="2"  Text="{Binding ElementName=Control, Path=Comment}">

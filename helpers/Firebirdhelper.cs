@@ -27,8 +27,8 @@ namespace SyncWPF
             csb.Database = "localhost";
             csb.Port = 3050;
             //csb.Database = @"C:\Users\trainee\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //SMS
-            //csb.Database = @"X:\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //thuis
-            csb.Database = @"C:\Users\steve\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //book
+            csb.Database = @"X:\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //thuis
+            //csb.Database = @"C:\Users\steve\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //book
             csb.UserID = "SYSDBA";
             csb.Password = "masterkey";
             csb.ServerType = FbServerType.Default;

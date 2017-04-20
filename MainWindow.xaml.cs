@@ -37,7 +37,7 @@ namespace SyncWPF
 
 
         private DateTime? m_SelectedDate = DateTime.Now;
-
+        public DateTimeOffset SelectedDateOffset => DataHelper.GetDateTimeOffset(SelectedDate);
         public DateTime? SelectedDate
         {
             get => m_SelectedDate;
@@ -46,18 +46,6 @@ namespace SyncWPF
                 m_SelectedDate = value;
                 OnPropertyChanged();
             }
-        }
-
-        public DateTimeOffset SelectedDateOffset => GetDateTimeOffset(SelectedDate);
-
-        DateTimeOffset GetDateTimeOffset(DateTime? aDateTime)
-        {
-            if (aDateTime == null)
-            {
-                return (DateTimeOffset)DateTime.Now;
-            }
-
-            return (DateTimeOffset)aDateTime;
         }
 
         private string m_Comment;
@@ -109,51 +97,18 @@ namespace SyncWPF
         public MainWindow()
         {
             InitializeComponent();
+            ProgressValue = 1;
         }
-
-
-        private async void DownloadAndSaveAll()
-        {
-            GetOrganizations();
-
-            var users = await ZendeskHelper.GetUsers();
-            foreach (var item in users)
-            {
-                Firebirdhelper.SaveUser(item);
-            }
-
-            var tickets = await ZendeskHelper.GetTickets();
-            foreach (var item in tickets)
-            {
-                Firebirdhelper.SaveTicket(item);
-            }
-        }
-
 
         private async void DownloadAndSaveIncremental()
         {
             var tickets = await ZendeskHelper.GetLastTickets(SelectedDateOffset);
-            var commentList = new List<Comment>();
+           
 
             foreach (var item in tickets)
             {
-                commentList.AddRange(ZendeskHelper.GetComment(DataHelper.ConvertToPrimitive(item.Id)));
-                foreach (var comment in commentList)
-                {
-                    Firebirdhelper.SaveComment(comment, DataHelper.ConvertToPrimitive(item.Id));
-                }
+                await Task.Factory.StartNew(() => GetComments(item));
                 Firebirdhelper.SaveTicket(item);
-            }
-        }
-
-        private async void DownloadAndSaveSatisfaction()
-        {
-            var satisfactions = await ZendeskHelper.GetSatisfaction();
-            var satisfactionList = new List<SatisfactionRating>();
-
-            foreach (var item in satisfactions)
-            {
-                Firebirdhelper.SaveSatisfaction(item);
             }
         }
 
@@ -165,9 +120,16 @@ namespace SyncWPF
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
             //  DownloadAndSaveAll();
+            
             Task.Factory.StartNew(() => GetOrganizations());
+            Task.Factory.StartNew(() => GetUsers());
+            Task.Factory.StartNew(() => GetTickets());
+            Task.Factory.StartNew(() => GetSatisfaction());
         }
 
+        #region myTasks
+
+    
         public async void GetOrganizations()
         {
             var organizations = await ZendeskHelper.GetOrganisations();
@@ -180,5 +142,51 @@ namespace SyncWPF
                 ProgressValue++;
             }
         }
+        public async void GetUsers()
+        {
+            var users = await ZendeskHelper.GetUsers();
+            Maximum = users.Count();
+            
+            foreach (var item in users)
+            {
+                Firebirdhelper.SaveUser(item);
+                Comment = "importing  " + item.Name + " to the database (" + ProgressValue.ToString() + "/" + Maximum.ToString() + ")";
+                ProgressValue++;
+            }
+        }
+        public async void GetTickets()
+        {
+            var tickets = await ZendeskHelper.GetTickets();
+            Maximum = tickets.Count();
+           
+            foreach (var item in tickets)
+            {
+                Firebirdhelper.SaveTicket(item);
+                Comment = "importing ticket " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                ProgressValue++;
+            }
+        }
+        public async void GetSatisfaction()
+        {
+            var satisfactions = await ZendeskHelper.GetSatisfaction();
+            Maximum = satisfactions.Count();
+
+            foreach (var item in satisfactions)
+            {
+                Firebirdhelper.SaveSatisfaction(item);
+                Comment = "importing ticket " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                ProgressValue++;
+            }
+        }
+        public async void GetComments(Ticket item )
+        {
+             var commentList = new List<Comment>();
+                commentList.AddRange(ZendeskHelper.GetComment(DataHelper.ConvertToPrimitive(item.Id)));
+                foreach (var comment in commentList)
+                {
+                    Firebirdhelper.SaveComment(comment, DataHelper.ConvertToPrimitive(item.Id));
+                }
+        }
+        #endregion
     }
 }
