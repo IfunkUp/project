@@ -113,13 +113,13 @@ namespace SyncWPF
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
             //   DownloadAndSaveAll();
-            Backgrndworker.UpdateInc(m_date.DateTime);
+            
         }
     }
 }
 /*
     automatisch de incremental doen en de volledige enkel manueel
-    de comments nog binnenhalen
+    
 
      
      

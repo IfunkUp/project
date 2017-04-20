@@ -74,7 +74,6 @@
     <Compile Include="helpers\Firebirdhelper.cs" />
     <Compile Include="helpers\KnowledgeBaseHelper.cs" />
     <Compile Include="helpers\ZendeskHelper.cs" />
-    <Compile Include="workers\Backgrndworker.cs" />
     <Compile Include="workers\KnowledgeBaseWorker.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
