@@ -10,6 +10,11 @@ using ZendeskApi_v2.Models.Users;
 using ZendeskApi_v2.Models.Satisfaction;
 using SyncWPF.workers;
 
+
+
+
+
+
 namespace SyncWPF
 {
     public static class ZendeskHelper
@@ -69,7 +74,6 @@ namespace SyncWPF
         public static async Task<List<Ticket>> GetTickets()
         {
             var ticketResponse = await s_Client.Tickets.GetAllTicketsAsync();
-            //var ticketResponse = await s_Client.Tickets.GetAllTicketMetricsAsync();
             var tickets = new List<Ticket>();
 
             do
@@ -84,10 +88,9 @@ namespace SyncWPF
         }
 
 
-        //gives a nullexeption on around the 1400th result
+        //gives a nullexeption around the 1400th result
         public static async Task<List<ZendeskApi_v2.Models.Satisfaction.SatisfactionRating>> GetSatisfaction()
         {
-            // var response = await s_Client.SatisfactionRatings.GetSatisfactionRatingsAsync();
             var response = await s_Client.SatisfactionRatings.GetReceivedSatisfactionRatingsAsync();
             var list = new List<ZendeskApi_v2.Models.Satisfaction.SatisfactionRating>();
             do
@@ -95,7 +98,14 @@ namespace SyncWPF
                 list.AddRange(response.SatisfactionRatings);
                 if (!string.IsNullOrWhiteSpace(response.NextPage))
                 {
-                    response = await s_Client.SatisfactionRatings.GetByPageUrlAsync<GroupSatisfactionResponse>(response.NextPage);
+                    try
+                    {
+                        response = await s_Client.SatisfactionRatings.GetByPageUrlAsync<GroupSatisfactionResponse>(response.NextPage);
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
             } while (list.Count != response.Count);
             
@@ -126,6 +136,7 @@ namespace SyncWPF
                 
             } while (tickets.Count != ticketResponse.Count);
             return tickets;
+            
         }
 
         public static async Task<List<User>> GetLastUsers(DateTimeOffset start)

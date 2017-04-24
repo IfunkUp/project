@@ -27,8 +27,8 @@ namespace SyncWPF
             csb.Database = "localhost";
             csb.Port = 3050;
             //csb.Database = @"C:\Users\trainee\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //SMS
-            csb.Database = @"X:\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //thuis
-            //csb.Database = @"C:\Users\steve\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //book
+            //csb.Database = @"X:\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //thuis
+            csb.Database = @"C:\Users\steve\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //book
             csb.UserID = "SYSDBA";
             csb.Password = "masterkey";
             csb.ServerType = FbServerType.Default;
@@ -149,8 +149,12 @@ namespace SyncWPF
 
                         cmd.Parameters.AddWithValue("IN_SAT_ID", satisfaction.Id);
                         cmd.Parameters.AddWithValue("IN_SCORE", DataHelper.Score(satisfaction.Score.ToString()));
-                        cmd.Parameters.AddWithValue("IN_SAT_COMMENT", satisfaction.Comment);
-                        cmd.Parameters.AddWithValue("IN_SAT_ASS_ID", satisfaction.AssigneeId);
+                        cmd.Parameters.AddWithValue("IN_SAT_COMMENT",DataHelper.NulltoString( satisfaction.Comment));
+                        if (satisfaction.AssigneeId != null)
+                        {
+                            cmd.Parameters.AddWithValue("IN_SAT_ASS_ID", satisfaction.AssigneeId);
+                        }
+                       
                         if (satisfaction.CreatedAt != null)
                             cmd.Parameters.AddWithValue("IN_SAT_CREATED", satisfaction.CreatedAt.Value.LocalDateTime);
                         

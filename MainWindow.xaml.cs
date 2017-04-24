@@ -35,8 +35,10 @@ namespace SyncWPF
         //  string m_PassWord = "smssms123";
         //  string m_Url = "http://smstiming.zendesk.com";
 
+        #region declarations
 
         private DateTime? m_SelectedDate = DateTime.Now;
+        
         public DateTimeOffset SelectedDateOffset => DataHelper.GetDateTimeOffset(SelectedDate);
         public DateTime? SelectedDate
         {
@@ -82,7 +84,7 @@ namespace SyncWPF
                 OnPropertyChanged();
             }
         }
-
+        #endregion
         #region propertyChanged     
         public event PropertyChangedEventHandler PropertyChanged;
         // Check the attribute in the following line :
@@ -100,26 +102,18 @@ namespace SyncWPF
             ProgressValue = 1;
         }
 
-        private async void DownloadAndSaveIncremental()
-        {
-            var tickets = await ZendeskHelper.GetLastTickets(SelectedDateOffset);
-           
-
-            foreach (var item in tickets)
-            {
-                await Task.Factory.StartNew(() => GetComments(item));
-                Firebirdhelper.SaveTicket(item);
-            }
-        }
 
         private void IncrementalSync_Click(object sender, RoutedEventArgs e)
         {
-            DownloadAndSaveIncremental();
+
+            Task.Factory.StartNew(() => GetTickets(SelectedDateOffset));
+
         }
 
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
             //  DownloadAndSaveAll();
+            
             
             Task.Factory.StartNew(() => GetOrganizations());
             Task.Factory.StartNew(() => GetUsers());
@@ -157,8 +151,19 @@ namespace SyncWPF
         public async void GetTickets()
         {
             var tickets = await ZendeskHelper.GetTickets();
+            InsertTicket(tickets);
+        }
+
+        public async void GetTickets(DateTimeOffset SelectedDateTimeOffset)
+        {
+            var tickets = await ZendeskHelper.GetLastTickets(SelectedDateTimeOffset);
+            InsertTicket(tickets);
+        }
+
+        public void InsertTicket(List<Ticket> tickets)
+        {
             Maximum = tickets.Count();
-           
+
             foreach (var item in tickets)
             {
                 Firebirdhelper.SaveTicket(item);
@@ -166,6 +171,8 @@ namespace SyncWPF
                 ProgressValue++;
             }
         }
+
+
         public async void GetSatisfaction()
         {
             var satisfactions = await ZendeskHelper.GetSatisfaction();

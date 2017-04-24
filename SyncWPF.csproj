@@ -61,8 +61,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="ZendeskApi_v2, Version=3.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\Documents\synctool\packages\ZendeskApi_v2.3.6.0\lib\net45\ZendeskApi_v2.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>packages\ZendeskApi_v2.3.6.0\lib\net45\ZendeskApi_v2.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
