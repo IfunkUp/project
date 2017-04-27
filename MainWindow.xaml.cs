@@ -112,13 +112,13 @@ namespace SyncWPF
 
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
-            //  DownloadAndSaveAll();
-            
-            
+
             Task.Factory.StartNew(() => GetOrganizations());
             Task.Factory.StartNew(() => GetUsers());
             Task.Factory.StartNew(() => GetTickets());
             Task.Factory.StartNew(() => GetSatisfaction());
+
+
         }
 
         #region myTasks

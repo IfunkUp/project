@@ -98,7 +98,7 @@ namespace SyncWPF
                         cmd.Parameters.AddWithValue("IN_VIA", DataHelper.NulltoString( ticket.Via.Channel));
                         cmd.Parameters.AddWithValue("IN_HAS_INCIDENTS",DataHelper.BoolToNum( ticket.HasIncidents.ToString()));
                         cmd.Parameters.AddWithValue("IN_RECEPIENT", DataHelper.NulltoString( ticket.Recipient));
-                        cmd.Parameters.AddWithValue("IN_COLLAB", DataHelper.NulltoString(ticket.CollaboratorIds.ToString()));
+                        cmd.Parameters.AddWithValue("IN_COLLAB", DataHelper.ListToString(ticket.CollaboratorIds));
 
 
                         cmd.ExecuteNonQuery();

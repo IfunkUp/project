@@ -62,11 +62,29 @@ namespace SyncWPF.helpers
             {
                 foreach (var item in given)
                 {
-                    res += item + " ";
+                    res += item + " , ";
                 }
             }
             return res;
         }
+
+        public static string ListToString(IList<long> given)
+        {
+            var res = "";
+            if (given != null && given.Count != 0)
+            {
+                foreach (var item in given)
+                {
+                    res += item + " , ";
+                }
+            }
+            return res;
+        }
+
+
+
+
+
         public static int Status(string given)
         {
             switch (given.ToLower())
@@ -95,6 +113,7 @@ namespace SyncWPF.helpers
                 return given;
             }
         }
+
 
 
         public static DateTimeOffset GetDateTimeOffset(DateTime? aDateTime)

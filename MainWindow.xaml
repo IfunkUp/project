@@ -27,9 +27,9 @@
             <ProgressBar Width="auto" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=ProgressValue}" Maximum="{Binding ElementName=Control, Path=Maximum}" Foreground="{Binding ElementName=Control, Path=Color}" />
 
         </DockPanel>
-        <TextBlock Grid.Row="2" Margin="5" Grid.ColumnSpan="2"  Text="{Binding ElementName=Control, Path=Comment}">
+        <ListBox Grid.Row="2" Margin="5" Grid.ColumnSpan="2" DataContext="{Binding ElementName=Control, Mode=OneWay}" >
 
-        </TextBlock>
+        </ListBox>
         <StatusBar Grid.Row="3" Grid.ColumnSpan="2">
             <StatusBarItem>
                 <Label Name="lblDate"/>
