@@ -97,7 +97,15 @@ namespace SyncWPF.helpers
         }
 
 
+        public static DateTimeOffset GetDateTimeOffset(DateTime? aDateTime)
+        {
+            if (aDateTime == null)
+            {
+                return (DateTimeOffset)DateTime.Now;
+            }
 
+            return (DateTimeOffset)aDateTime;
+        }
 
 
 

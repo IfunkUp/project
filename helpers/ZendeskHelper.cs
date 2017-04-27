@@ -9,14 +9,22 @@ using ZendeskApi_v2.Models.Tickets;
 using ZendeskApi_v2.Models.Users;
 using ZendeskApi_v2.Models.Satisfaction;
 using SyncWPF.workers;
+using SyncWPF.helpers;
+using RestSharp;
+using RestSharp.Authenticators;
+using Newtonsoft.Json.Linq;
+using satisfaction = SyncWPF.Classes.SatisFactionRating;
+using SyncWPF.Classes;
+using System.Web.Script.Serialization;
+using System.Windows;
 
 namespace SyncWPF
 {
     public static class ZendeskHelper
     {
-        private static string s_UserName = "pieter.dewitte@sms-timing.com";
-        private static string s_PassWord = "awesomeness";
-        private static string s_Url = "http://smstiming.zendesk.com";
+        private static string s_UserName = "info@sms-timing.com";
+        private static string s_PassWord = "smssms123";
+        private static string s_Url = "https://smstiming.zendesk.com";
 
         private static ZendeskApi s_Client = new ZendeskApi(s_Url, s_UserName, s_PassWord);
         
@@ -69,7 +77,6 @@ namespace SyncWPF
         public static async Task<List<Ticket>> GetTickets()
         {
             var ticketResponse = await s_Client.Tickets.GetAllTicketsAsync();
-            //var ticketResponse = await s_Client.Tickets.GetAllTicketMetricsAsync();
             var tickets = new List<Ticket>();
 
             do
@@ -84,25 +91,61 @@ namespace SyncWPF
         }
 
 
-        //gives a nullexeption on around the 1400th result
-        public static async Task<List<ZendeskApi_v2.Models.Satisfaction.SatisfactionRating>> GetSatisfaction()
+       
+        public static List<satisfaction> GetSatisfaction()
         {
-            // var response = await s_Client.SatisfactionRatings.GetSatisfactionRatingsAsync();
-            var response = await s_Client.SatisfactionRatings.GetReceivedSatisfactionRatingsAsync();
-            var list = new List<ZendeskApi_v2.Models.Satisfaction.SatisfactionRating>();
+            int teller = 0;
+            var page = "";
+            var listSat = new List<satisfaction>();
+            var s_Client = new RestClient(s_Url + "/");
+            s_Client.Authenticator = new HttpBasicAuthenticator(s_UserName, s_PassWord);
+ 
             do
             {
-                list.AddRange(response.SatisfactionRatings);
-                if (!string.IsNullOrWhiteSpace(response.NextPage))
-                {
-                    response = await s_Client.SatisfactionRatings.GetByPageUrlAsync<GroupSatisfactionResponse>(response.NextPage);
-                }
-            } while (list.Count != response.Count);
-            
+                teller++;
+                page = "api/v2/satisfaction_ratings/received.json?page=" + teller;
+                var request = new RestRequest(page, Method.GET);
+                s_Client.AddDefaultHeader("Accept", "application/json");
+                IRestResponse response = s_Client.Execute(request);
+                var content = response.Content;
+                JObject Satisfaction = JObject.Parse(content);
 
-            return list;
+
+                foreach (JObject rating in Satisfaction.SelectToken("satisfaction_ratings"))
+                {
+                    listSat.Add(new SatisFactionRating()
+                    {
+                        Id = (long)rating.SelectToken("id"),
+                        Url = (string)rating.SelectToken("url"),
+                        Assignee_id = (long?)rating.SelectToken("assignee_id"),
+                        Group_id = (long?)rating.SelectToken("group_id"),
+                        Requester_id = (long?)rating.SelectToken("requester_id"),
+                        Ticket_id = (long?)rating.SelectToken("ticket_id"),
+                        Score = (string)rating.SelectToken("score"),
+                        Created_at = (DateTime)rating.SelectToken("created_at"),
+                        Updated_at = (DateTime)rating.SelectToken("updated_at"),
+                        Comment = (string)rating.SelectToken("comment")
+                    });
+                }
+                page = (string) Satisfaction.SelectToken("next_page");
+            } while (!string.IsNullOrEmpty((string) page));
+            
+             
+
+            return listSat;
         }
 
+    
+
+
+
+
+
+
+
+
+
+        
 
 
 
@@ -126,6 +169,7 @@ namespace SyncWPF
                 
             } while (tickets.Count != ticketResponse.Count);
             return tickets;
+            
         }
 
         public static async Task<List<User>> GetLastUsers(DateTimeOffset start)

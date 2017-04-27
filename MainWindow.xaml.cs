@@ -19,108 +19,181 @@ using ZendeskApi_v2.Models.Users;
 using SatisfactionRating = ZendeskApi_v2.Models.Satisfaction.SatisfactionRating;
 using Category = ZendeskApi_v2.Models.Categories.Category;
 using SyncWPF.workers;
+using System.Threading;
+using System.Windows.Threading;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace SyncWPF
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-      //  string m_UserName = "info@sms-timing.com";
-      //  string m_PassWord = "smssms123";
-      //  string m_Url = "http://smstiming.zendesk.com";
-        DateTimeOffset m_date = DateTimeOffset.Now;
-        private ProgressBar bar = null;
+        //  string m_UserName = "info@sms-timing.com";
+        //  string m_PassWord = "smssms123";
+        //  string m_Url = "http://smstiming.zendesk.com";
+
+        #region declarations
+
+        private DateTime? m_SelectedDate = DateTime.Now;
         
+        public DateTimeOffset SelectedDateOffset => DataHelper.GetDateTimeOffset(SelectedDate);
+        public DateTime? SelectedDate
+        {
+            get => m_SelectedDate;
+            set
+            {
+                m_SelectedDate = value;
+                OnPropertyChanged();
+            }
+        }
 
+        private string m_Comment;
+        public string Comment
+        {
+            get => m_Comment;
+            set
+            {
+                m_Comment = value;
+                OnPropertyChanged();
+            }
+        }
 
+        private double m_Maximum;
+
+        public double Maximum
+        {
+            get => m_Maximum;
+            set
+            {
+                m_Maximum = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double m_ProgressValue;
+
+        public double ProgressValue
+        {
+            get => m_ProgressValue;
+            set
+            {
+                m_ProgressValue = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+        #region propertyChanged     
+        public event PropertyChangedEventHandler PropertyChanged;
+        // Check the attribute in the following line :
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+        #endregion
 
         public MainWindow()
         {
-           
             InitializeComponent();
+            ProgressValue = 1;
         }
 
 
-        private async void DownloadAndSaveAll()
+        private void IncrementalSync_Click(object sender, RoutedEventArgs e)
         {
 
+            Task.Factory.StartNew(() => GetTickets(SelectedDateOffset));
+
+        }
+
+        private void FullSync_Click(object sender, RoutedEventArgs e)
+        {
+            //  DownloadAndSaveAll();
+            
+            
+            Task.Factory.StartNew(() => GetOrganizations());
+            Task.Factory.StartNew(() => GetUsers());
+            Task.Factory.StartNew(() => GetTickets());
+            Task.Factory.StartNew(() => GetSatisfaction());
+        }
+
+        #region myTasks
+
+    
+        public async void GetOrganizations()
+        {
             var organizations = await ZendeskHelper.GetOrganisations();
+            Maximum = organizations.Count();
+            ProgressValue = 1;
             foreach (var item in organizations)
             {
                 Firebirdhelper.SaveOrganization(item);
+                Comment = "importing  " + item.Name + " to the database (" + ProgressValue.ToString() + "/" + Maximum.ToString() + ")";
+                ProgressValue++;
             }
+        }
+        public async void GetUsers()
+        {
             var users = await ZendeskHelper.GetUsers();
-
+            Maximum = users.Count();
+            
             foreach (var item in users)
             {
                 Firebirdhelper.SaveUser(item);
+                Comment = "importing  " + item.Name + " to the database (" + ProgressValue.ToString() + "/" + Maximum.ToString() + ")";
+                ProgressValue++;
             }
-
+        }
+        public async void GetTickets()
+        {
             var tickets = await ZendeskHelper.GetTickets();
+            InsertTicket(tickets);
+        }
+
+        public async void GetTickets(DateTimeOffset SelectedDateTimeOffset)
+        {
+            var tickets = await ZendeskHelper.GetLastTickets(SelectedDateTimeOffset);
+            InsertTicket(tickets);
+        }
+
+        public void InsertTicket(List<Ticket> tickets)
+        {
+            Maximum = tickets.Count();
+
             foreach (var item in tickets)
             {
                 Firebirdhelper.SaveTicket(item);
+                Comment = "importing ticket " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                ProgressValue++;
             }
-
         }
-        private async void DownloadAndSaveIncremental(DateTimeOffset givenDate)
+
+
+        public async void GetSatisfaction()
         {
-            var tickets = await ZendeskHelper.GetLastTickets(givenDate);
-            var commentList = new List<Comment>();
-            foreach (var item in tickets)
+            var satisfactions = ZendeskHelper.GetSatisfaction();
+            Maximum = satisfactions.Count();
+
+            foreach (var item in satisfactions)
             {
+                Firebirdhelper.SaveSatisfaction(item);
+                Comment = "importing ticket " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                ProgressValue++;
+            }
+        }
+        public async void GetComments(Ticket item )
+        {
+             var commentList = new List<Comment>();
                 commentList.AddRange(ZendeskHelper.GetComment(DataHelper.ConvertToPrimitive(item.Id)));
                 foreach (var comment in commentList)
                 {
                     Firebirdhelper.SaveComment(comment, DataHelper.ConvertToPrimitive(item.Id));
                 }
-                Firebirdhelper.SaveTicket(item);
-               
-            }
         }
-
-        private async void DownloadAndSaveSatisfaction()
-        {
-            var satisfactions = await ZendeskHelper.GetSatisfaction();
-            var satisfactionList = new List<SatisfactionRating>();
-
-            foreach (var item in satisfactions)
-            {
-                Firebirdhelper.SaveSatisfaction(item);
-            }
-
-
-        }
-
-        private void dpStart_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
-        {
-            m_date = dpStart.SelectedDate.Value.Date;
-        }
-
-        private void grdMain_Loaded(object sender, RoutedEventArgs e)
-        {
-            dpStart.SelectedDate = m_date.Date;
-        }
-
-        private void IncrementalSync_Click(object sender, RoutedEventArgs e)
-        {
-            m_date = dpStart.SelectedDate.Value;
-            DownloadAndSaveIncremental(m_date);
-        }
-
-        private void FullSync_Click(object sender, RoutedEventArgs e)
-        {
-            //   DownloadAndSaveAll();
-            
-        }
+        #endregion
     }
 }
-/*
-    automatisch de incremental doen en de volledige enkel manueel
-    
-
-     
-     
-     */
