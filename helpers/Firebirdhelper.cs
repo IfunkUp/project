@@ -14,6 +14,7 @@ using Category =  ZendeskApi_v2.Models.HelpCenter.Categories.Category;
 using ZendeskApi_v2.Models.Articles;
 using ZendeskApi_v2.Models.Organizations;
 using ZendeskApi_v2.Models.Users;
+using SyncWPF.Classes;
 
 namespace SyncWPF
 {
@@ -86,12 +87,10 @@ namespace SyncWPF
                         {
                             cmd.Parameters.AddWithValue("IN_ASS_US_ID", 0);
                         }
-                       
-                       // cmd.Parameters.AddWithValue("IN_SUBMITTER_ID", long.Parse(ticket.SubmitterId.ToString()));
+
                         cmd.Parameters.AddWithValue("IN_CREATED", ticket.CreatedAt);
                         cmd.Parameters.AddWithValue("IN_UPDATED", ticket.UpdatedAt);
                         cmd.Parameters.AddWithValue("IN_SUBJECT", DataHelper.NulltoString( ticket.Subject));
-                        //cmd.Parameters.AddWithValue("IN_DESCRIPTION", DataHelper.NulltoString(ticket.Description));
                         cmd.Parameters.AddWithValue("IN_STATUS",DataHelper.Status(ticket.Status));
                         cmd.Parameters.AddWithValue("IN_TYPE", DataHelper.NulltoString( ticket.Type));
                         cmd.Parameters.AddWithValue("IN_TAGS", DataHelper.ListToString(ticket.Tags));
@@ -99,6 +98,7 @@ namespace SyncWPF
                         cmd.Parameters.AddWithValue("IN_VIA", DataHelper.NulltoString( ticket.Via.Channel));
                         cmd.Parameters.AddWithValue("IN_HAS_INCIDENTS",DataHelper.BoolToNum( ticket.HasIncidents.ToString()));
                         cmd.Parameters.AddWithValue("IN_RECEPIENT", DataHelper.NulltoString( ticket.Recipient));
+                        cmd.Parameters.AddWithValue("IN_COLLAB", DataHelper.NulltoString(ticket.CollaboratorIds.ToString()));
 
 
                         cmd.ExecuteNonQuery();
@@ -135,7 +135,7 @@ namespace SyncWPF
         }
 
 
-        public static void SaveSatisfaction(satisfaction satisfaction)
+        public static void SaveSatisfaction(SatisFactionRating satisfaction)
         {
             using (var con = Openconnection(Connectionstring()))
             {
@@ -149,22 +149,18 @@ namespace SyncWPF
 
                         cmd.Parameters.AddWithValue("IN_SAT_ID", satisfaction.Id);
                         cmd.Parameters.AddWithValue("IN_SCORE", DataHelper.Score(satisfaction.Score.ToString()));
-                        cmd.Parameters.AddWithValue("IN_SAT_COMMENT",DataHelper.NulltoString( satisfaction.Comment));
-                        if (satisfaction.AssigneeId != null)
-                        {
-                            cmd.Parameters.AddWithValue("IN_SAT_ASS_ID", satisfaction.AssigneeId);
-                        }
+                        cmd.Parameters.AddWithValue("IN_SAT_COMMENT",DataHelper.NulltoString( satisfaction.Comment));                      
+                        cmd.Parameters.AddWithValue("IN_SAT_ASS_ID", satisfaction.Assignee_id);
                        
-                        if (satisfaction.CreatedAt != null)
-                            cmd.Parameters.AddWithValue("IN_SAT_CREATED", satisfaction.CreatedAt.Value.LocalDateTime);
+                        if (satisfaction.Created_at != null)
+                            cmd.Parameters.AddWithValue("IN_SAT_CREATED", satisfaction.Created_at);
+                        
                         
 
 
                         cmd.ExecuteNonQuery();
                         tran.Commit();
-                        //cmd.Parameters.AddWithValue("IN_SAT_CREATED",satisfaction.CreatedAt.Value.Date.ToString());
-                        //cmd.Parameters.AddWithValue("IN_SAT_CREATED",Int16.Parse( DateTime.Now.ToString()));
-                        //cmd.Parameters.AddWithValue("IN_TK_ID", satisfaction.TicketId);
+
 
                     }
                 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncWPF", "SyncWPF.csproj", "{84B4FC7E-9F42-49FD-A6A5-6DFBF238468F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZendeskApi_v2", "..\ZendeskApi_v2-master\src\ZendeskApi_v2\ZendeskApi_v2.csproj", "{D17BCC22-9561-4FC4-9C52-975808641ECE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{84B4FC7E-9F42-49FD-A6A5-6DFBF238468F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84B4FC7E-9F42-49FD-A6A5-6DFBF238468F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84B4FC7E-9F42-49FD-A6A5-6DFBF238468F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D17BCC22-9561-4FC4-9C52-975808641ECE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D17BCC22-9561-4FC4-9C52-975808641ECE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D17BCC22-9561-4FC4-9C52-975808641ECE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D17BCC22-9561-4FC4-9C52-975808641ECE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

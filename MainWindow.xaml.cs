@@ -175,7 +175,7 @@ namespace SyncWPF
 
         public async void GetSatisfaction()
         {
-            var satisfactions = await ZendeskHelper.GetSatisfaction();
+            var satisfactions = ZendeskHelper.GetSatisfaction();
             Maximum = satisfactions.Count();
 
             foreach (var item in satisfactions)
