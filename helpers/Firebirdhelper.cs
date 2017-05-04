@@ -16,6 +16,7 @@ using ZendeskApi_v2.Models.Organizations;
 using ZendeskApi_v2.Models.Users;
 using SyncWPF.Classes;
 
+
 namespace SyncWPF
 {
     class Firebirdhelper
@@ -78,10 +79,10 @@ namespace SyncWPF
                         cmd.CommandText = "INSERT_TICKET";
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        cmd.Parameters.AddWithValue("IN_ID", long.Parse(ticket.Id.ToString()));
+                        cmd.Parameters.AddWithValue("IN_ID", (Int64) ticket.Id);
                         if (!string.IsNullOrEmpty(ticket.AssigneeId.ToString()))
                         {
-                            cmd.Parameters.AddWithValue("IN_ASS_US_ID", long.Parse(ticket.AssigneeId.ToString()));
+                            cmd.Parameters.AddWithValue("IN_ASS_US_ID",(Int64) ticket.AssigneeId);
                         }
                         else
                         {
@@ -99,6 +100,7 @@ namespace SyncWPF
                         cmd.Parameters.AddWithValue("IN_HAS_INCIDENTS",DataHelper.BoolToNum( ticket.HasIncidents.ToString()));
                         cmd.Parameters.AddWithValue("IN_RECEPIENT", DataHelper.NulltoString( ticket.Recipient));
                         cmd.Parameters.AddWithValue("IN_COLLAB", DataHelper.ListToString(ticket.CollaboratorIds));
+                        cmd.Parameters.AddWithValue("IN_SUBMIT_ID",(Int64) ticket.SubmitterId);
 
 
                         cmd.ExecuteNonQuery();
@@ -180,10 +182,12 @@ namespace SyncWPF
                         cmd.CommandText = "INSERT_ORGANIZATION";
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        cmd.Parameters.AddWithValue("IN_ID", float.Parse(organization.Id.ToString()));
+                        cmd.Parameters.AddWithValue("IN_ID",(Int64) organization.Id);
                         cmd.Parameters.AddWithValue("IN_NAME", organization.Name);
-                        cmd.Parameters.AddWithValue("IN_REGION", organization.Tags);
-                        cmd.Parameters.AddWithValue("IN_SALES_ID", 1);
+                        cmd.Parameters.AddWithValue("IN_REGION", DataHelper.ListToString( organization.Tags));
+                        cmd.Parameters.AddWithValue("IN_DOM_NAME",DataHelper.ListToString( organization.DomainNames));
+                        cmd.Parameters.AddWithValue("IN_CREATED", organization.CreatedAt);
+                        cmd.Parameters.AddWithValue("IN_UPDATED", organization.UpdatedAt);
 
                         cmd.ExecuteNonQuery();
                         tran.Commit();
@@ -207,12 +211,12 @@ namespace SyncWPF
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
 
-                        cmd.Parameters.AddWithValue("IN_ID", float.Parse( user.Id.ToString()));
+                        cmd.Parameters.AddWithValue("IN_ID", (Int64) user.Id);
                         cmd.Parameters.AddWithValue("IN_NAME", user.Name);
                         cmd.Parameters.AddWithValue("IN_EMAIL", user.Email);
                         if (!string.IsNullOrEmpty(user.OrganizationId.ToString()))
                         {
-                            cmd.Parameters.AddWithValue("IN_ORG_ID", float.Parse(user.OrganizationId.ToString()));
+                            cmd.Parameters.AddWithValue("IN_ORG_ID", (Int64) user.OrganizationId);
                         }
                         else
                         {
@@ -235,7 +239,38 @@ namespace SyncWPF
 
         }
 
+        public static void SaveAudit( Audit audit)
+        {
+            using (var con = Openconnection(Connectionstring()))
+            {
+                using (var tran = con.BeginTransaction())
+                {
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.Transaction = tran;
+                        cmd.CommandText = "INSERT_AUDIT";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        try
+                        {
 
+                            cmd.Parameters.AddWithValue("IN_AUD_ID", audit.Id);
+                            cmd.Parameters.AddWithValue("IN_TK_ID", audit.Ticket_Id);
+                            cmd.Parameters.AddWithValue("IN_AUTH_ID", audit.Author_Id);
+
+                            cmd.ExecuteNonQuery();
+                            tran.Commit();
+                        }
+                        catch (Exception)
+                        {
+
+                            throw;
+                        }
+
+
+                    }
+                }
+            }
+        }
 
 
         #endregion
@@ -254,11 +289,11 @@ namespace SyncWPF
                         cmd.CommandText = "INSERT_SECTION";
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        cmd.Parameters.AddWithValue("IN_ID",int.Parse( section.Id.ToString()));
+                        cmd.Parameters.AddWithValue("IN_ID",(Int64) section.Id);
                         cmd.Parameters.AddWithValue("IN_NAME", section.Name);
                         cmd.Parameters.AddWithValue("IN_DESCRIPTION", section.Description);
                         cmd.Parameters.AddWithValue("IN_URL", section.Url);
-                        cmd.Parameters.AddWithValue("IN_FK_CAT_ID",int.Parse( section.CategoryId.ToString()));
+                        cmd.Parameters.AddWithValue("IN_FK_CAT_ID",(Int64) section.CategoryId);
                         cmd.Parameters.AddWithValue("IN_CREATED", section.CreatedAt);
                         cmd.Parameters.AddWithValue("IN_UPDATED", section.UpdatedAt);
 
@@ -284,9 +319,9 @@ namespace SyncWPF
                         cmd.CommandText = "INSERT_CATEGORY";
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        cmd.Parameters.AddWithValue("IN_ID", int.Parse(category.Id.ToString()));
+                        cmd.Parameters.AddWithValue("IN_ID", (Int64) category.Id);
                         cmd.Parameters.AddWithValue("IN_NAME", category.Name.ToString());
-                        cmd.Parameters.AddWithValue("IN_DESC", category.Description.ToString());
+                        cmd.Parameters.AddWithValue("IN_DESC", category.Description);
                         cmd.Parameters.AddWithValue("IN_CREATED", category.CreatedAt);
                         cmd.Parameters.AddWithValue("IN_UPDATED", category.UpdatedAt);
 
@@ -312,18 +347,16 @@ namespace SyncWPF
                         cmd.CommandText = "INSERT_ARTICLES";
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        cmd.Parameters.AddWithValue("IN_ID", float.Parse(article.Id.ToString()));
-                        cmd.Parameters.AddWithValue("IN_URL", article.Url.ToString());
-                        cmd.Parameters.AddWithValue("IN_TITLE", article.Title.ToString());
-                       // cmd.Parameters.AddWithValue("IN_BODY", article.Body.ToString());
-                        cmd.Parameters.AddWithValue("IN_AUTHOR_ID", float.Parse( article.AuthorId.ToString()));
+                        cmd.Parameters.AddWithValue("IN_ID", (Int64) article.Id);
+                        cmd.Parameters.AddWithValue("IN_URL", article.Url);
+                        cmd.Parameters.AddWithValue("IN_TITLE", article.Title);
+                        cmd.Parameters.AddWithValue("IN_AUTHOR_ID", (Int64) article.AuthorId);
                         cmd.Parameters.AddWithValue("IN_LABEL_NAMES", DataHelper.ArrToString( article.LabelNames));
-                        //cmd.Parameters.AddRange("IN_LABEL_NAMES", article.LabelNames);
-                        cmd.Parameters.AddWithValue("IN_DRAFT", DataHelper.BoolToNum(article.Draft.ToString()));
-                        cmd.Parameters.AddWithValue("IN_PROMOTED", DataHelper.BoolToNum(article.Promoted.ToString()));
-                        cmd.Parameters.AddWithValue("IN_VOTE_SUM", int.Parse(article.VoteSum.ToString()));
-                        cmd.Parameters.AddWithValue("IN_VOTE_COUNT",int.Parse(article.VoteCount.ToString()));
-                        cmd.Parameters.AddWithValue("IN_SEC_ID", float.Parse(article.SectionId.ToString()));
+                        cmd.Parameters.AddWithValue("IN_DRAFT", article.Draft ? 1 : 0);
+                        cmd.Parameters.AddWithValue("IN_PROMOTED", article.Promoted ? 1 : 0);
+                        cmd.Parameters.AddWithValue("IN_VOTE_SUM", (Int64) article.VoteSum);
+                        cmd.Parameters.AddWithValue("IN_VOTE_COUNT", (Int64) article.VoteCount);
+                        cmd.Parameters.AddWithValue("IN_SEC_ID", (Int64) article.SectionId);
                         cmd.Parameters.AddWithValue("IN_CREATED", article.CreatedAt);
                         cmd.Parameters.AddWithValue("IN_UPDATED", article.UpdatedAt);
 

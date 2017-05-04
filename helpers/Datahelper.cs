@@ -80,7 +80,18 @@ namespace SyncWPF.helpers
             }
             return res;
         }
-
+        public static string ListToString(IList<object> given)
+        {
+            var res = "";
+            if (given != null && given.Count != 0)
+            {
+                foreach (var item in given)
+                {
+                    res += item + " , ";
+                }
+            }
+            return res;
+        }
 
 
 

@@ -23,6 +23,8 @@ using System.Threading;
 using System.Windows.Threading;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using ZendeskApi_v2.Models.Articles;
+using SyncWPF.Classes;
 
 namespace SyncWPF
 {
@@ -112,18 +114,24 @@ namespace SyncWPF
 
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
+            Firebirdhelper.SaveUser(
+            ZendeskHelper.GetUser(16553321147));
 
-            Task.Factory.StartNew(() => GetOrganizations());
-            Task.Factory.StartNew(() => GetUsers());
-            Task.Factory.StartNew(() => GetTickets());
-            Task.Factory.StartNew(() => GetSatisfaction());
+            //Task.Factory.StartNew(() => GetOrganizations());
+            //Task.Factory.StartNew(() => GetUsers());
+           // Task.Factory.StartNew(() => GetTickets());
+            //Task.Factory.StartNew(() => GetSatisfaction());
 
+            //Task.Factory.StartNew(() => GetKbCategories());
+            //Task.Factory.StartNew(() => GetKbSections());
+           // Task.Factory.StartNew(() => GetKbArticles());
 
         }
 
         #region myTasks
 
-    
+        #region Support Tickets
+ 
         public async void GetOrganizations()
         {
             var organizations = await ZendeskHelper.GetOrganisations();
@@ -166,11 +174,29 @@ namespace SyncWPF
 
             foreach (var item in tickets)
             {
+                
                 Firebirdhelper.SaveTicket(item);
                 Comment = "importing ticket " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                GetAudit(item.Id);
                 ProgressValue++;
             }
         }
+
+        public void GetAudit(Int64? ticketID)
+        {
+            var audits = ZendeskHelper.GetAudit(ticketID);
+
+            foreach (Audit item in audits)
+            {
+                Firebirdhelper.SaveAudit(item);
+            }
+
+
+            
+        }
+
+
+
 
 
         public async void GetSatisfaction()
@@ -194,6 +220,60 @@ namespace SyncWPF
                     Firebirdhelper.SaveComment(comment, DataHelper.ConvertToPrimitive(item.Id));
                 }
         }
+        #endregion
+
+        #region KnowledgeBaseTasks
+
+
+        public async void GetKbArticles()
+        {
+            var articles = await KnowledgeBaseHelper.GetAllKBArticles();
+            Maximum = articles.Count();
+
+            foreach (var item in articles)
+            {
+                Firebirdhelper.SaveArticles(item);
+                Comment = "importing article " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                ProgressValue++;
+            }
+           
+        }
+
+
+        public async void GetKbSections()
+        {
+            var sections = await KnowledgeBaseHelper.GetAllKBSections();
+            Maximum = sections.Count(); ;
+
+            foreach (var item in sections)
+            {
+                Firebirdhelper.SaveSections(item);
+                Comment = "importing section " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                ProgressValue++;
+            }
+        }
+
+        public async void GetKbCategories()
+        {
+            var categories = await KnowledgeBaseHelper.GetAllKBCategories();
+            Maximum = categories.Count();
+
+            foreach (var item in categories)
+            {
+                Firebirdhelper.SaveCategories(item);
+                Comment = "importing category " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
+                ProgressValue++;
+            }
+
+
+        }
+
+
+
+
+
+
+        #endregion
         #endregion
     }
 }

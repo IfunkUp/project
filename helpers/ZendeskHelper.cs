@@ -18,6 +18,7 @@ using SyncWPF.Classes;
 using System.Web.Script.Serialization;
 using System.Windows;
 
+
 namespace SyncWPF
 {
     public static class ZendeskHelper
@@ -41,7 +42,6 @@ namespace SyncWPF
         public static async Task<List<User>> GetUsers()
         {
             var users = new List<User>();
-
             var response = await s_Client.Users.GetAllUsersAsync();
             do
             {
@@ -51,7 +51,7 @@ namespace SyncWPF
                     response = await s_Client.Users.GetByPageUrlAsync<GroupUserResponse>(response.NextPage);
                 }
 
-            } while (users.Count != response.Count);
+            } while (response.NextPage != null);
             return users;
         }
 
@@ -91,6 +91,7 @@ namespace SyncWPF
         }
 
 
+
        
         public static List<satisfaction> GetSatisfaction()
         {
@@ -128,16 +129,83 @@ namespace SyncWPF
                     });
                 }
                 page = (string) Satisfaction.SelectToken("next_page");
-            } while (!string.IsNullOrEmpty((string) page));
+            } while (!string.IsNullOrEmpty(page));
             
              
 
             return listSat;
         }
 
-    
+        public static List<Audit> GetAudit(long? ticketId)
+        {
+            int teller = 0;
+            var page = "";
+            var ListAudit = new List<Audit>();
+            var s_Client = new RestClient(s_Url + "/");
+            s_Client.Authenticator = new HttpBasicAuthenticator(s_UserName, s_PassWord);
+
+            do
+            {
+                teller++;
+                page = "api/v2/tickets/" + ticketId + "/audits.json?page=" + teller;
+                var request = new RestRequest(page, Method.GET);
+                s_Client.AddDefaultHeader("Accept", "application/json");
+                IRestResponse response = s_Client.Execute(request);
+                var content = response.Content;
+                JObject Audit = JObject.Parse(content);
+
+                foreach (JObject audit in Audit.SelectToken("audits"))
+                {
+                    ListAudit.Add(new SyncWPF.Classes.Audit()
+                    {
+                        Id = (Int64)audit.SelectToken("id"),
+                        Ticket_Id = (Int64)audit.SelectToken("ticket_id"),
+                        Author_Id = (Int64)audit.SelectToken("author_id")
+
+                    });
+                }
+                page = (string)Audit.SelectToken("next_page");
+            } while (!string.IsNullOrEmpty(page));
+
+            return ListAudit;
+        }
+
+        public static User GetUser(long id)
+        {
+            
+            var page = "";
+            var user = new User();
+            var s_Client = new RestClient(s_Url + "/");
+            s_Client.Authenticator = new HttpBasicAuthenticator(s_UserName, s_PassWord);
+            page = "api/v2/users/" +id+ ".json";
+            var request = new RestRequest(page, Method.GET);
+            s_Client.AddDefaultHeader("Accept", "application/json");
+            IRestResponse response = s_Client.Execute(request);
+            var content = response.Content;
+            JToken Juser = JToken.Parse(content);
+
+            
 
 
+
+
+            foreach (JObject item in Juser.SelectToken("user"))
+            {
+                new User()
+                {
+                    Id = (Int64)item.SelectToken("id"),
+                Name = item.SelectToken("name").ToString(),
+                Email = item.SelectToken("email").ToString(),
+                OrganizationId = (Int64)item.SelectToken("organization_id"),
+                Phone = item.SelectToken("phone").ToString()
+
+            };
+            }
+
+            return user;
+            
+
+        }
 
 
 
