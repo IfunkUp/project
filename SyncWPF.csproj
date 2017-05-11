@@ -70,6 +70,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Classes\Audit.cs" />
+    <Compile Include="Classes\DMboard.cs" />
     <Compile Include="Classes\SatisFactionRating.cs" />
     <Compile Include="helpers\ClientHelper.cs" />
     <Compile Include="helpers\Datahelper.cs" />

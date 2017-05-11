@@ -114,18 +114,27 @@ namespace SyncWPF
 
         private void FullSync_Click(object sender, RoutedEventArgs e)
         {
-            Firebirdhelper.SaveUser(
-            ZendeskHelper.GetUser(16553321147));
 
-            //Task.Factory.StartNew(() => GetOrganizations());
-            //Task.Factory.StartNew(() => GetUsers());
-           // Task.Factory.StartNew(() => GetTickets());
-            //Task.Factory.StartNew(() => GetSatisfaction());
+            SyncUAndO();
+            SyncTickets();
+            SyncKB();
 
-            //Task.Factory.StartNew(() => GetKbCategories());
-            //Task.Factory.StartNew(() => GetKbSections());
-           // Task.Factory.StartNew(() => GetKbArticles());
-
+        }
+        private void SyncUAndO()
+        {
+            Task.Factory.StartNew(() => GetOrganizations());
+            Task.Factory.StartNew(() => GetUsers());
+        }
+        private void SyncTickets()
+        {
+            Task.Factory.StartNew(() => GetTickets());
+            Task.Factory.StartNew(() => GetSatisfaction());
+        }
+        private void SyncKB()
+        {
+            Task.Factory.StartNew(() => GetKbCategories());
+            Task.Factory.StartNew(() => GetKbSections());
+            Task.Factory.StartNew(() => GetKbArticles());
         }
 
         #region myTasks
@@ -177,23 +186,23 @@ namespace SyncWPF
                 
                 Firebirdhelper.SaveTicket(item);
                 Comment = "importing ticket " + ProgressValue.ToString() + " of " + Maximum.ToString() + " to the database ";
-                GetAudit(item.Id);
+                //GetAudit(item.Id);
                 ProgressValue++;
             }
         }
 
-        public void GetAudit(Int64? ticketID)
-        {
-            var audits = ZendeskHelper.GetAudit(ticketID);
+        //public void GetAudit(Int64? ticketID)
+        //{
+        //    var audits = ZendeskHelper.GetAudit(ticketID);
 
-            foreach (Audit item in audits)
-            {
-                Firebirdhelper.SaveAudit(item);
-            }
+        //    foreach (Audit item in audits)
+        //    {
+        //        Firebirdhelper.SaveAudit(item);
+        //    }
 
 
             
-        }
+        //}
 
 
 

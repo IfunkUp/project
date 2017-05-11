@@ -101,6 +101,7 @@ namespace SyncWPF
                         cmd.Parameters.AddWithValue("IN_RECEPIENT", DataHelper.NulltoString( ticket.Recipient));
                         cmd.Parameters.AddWithValue("IN_COLLAB", DataHelper.ListToString(ticket.CollaboratorIds));
                         cmd.Parameters.AddWithValue("IN_SUBMIT_ID",(Int64) ticket.SubmitterId);
+                        cmd.Parameters.AddWithValue("IN_ORG_ID", (Int64?) ticket.OrganizationId);
 
 
                         cmd.ExecuteNonQuery();
@@ -239,38 +240,38 @@ namespace SyncWPF
 
         }
 
-        public static void SaveAudit( Audit audit)
-        {
-            using (var con = Openconnection(Connectionstring()))
-            {
-                using (var tran = con.BeginTransaction())
-                {
-                    using (var cmd = con.CreateCommand())
-                    {
-                        cmd.Transaction = tran;
-                        cmd.CommandText = "INSERT_AUDIT";
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                        try
-                        {
+        //public static void SaveAudit( Audit audit)
+        //{
+        //    using (var con = Openconnection(Connectionstring()))
+        //    {
+        //        using (var tran = con.BeginTransaction())
+        //        {
+        //            using (var cmd = con.CreateCommand())
+        //            {
+        //                cmd.Transaction = tran;
+        //                cmd.CommandText = "INSERT_AUDIT";
+        //                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        //                try
+        //                {
 
-                            cmd.Parameters.AddWithValue("IN_AUD_ID", audit.Id);
-                            cmd.Parameters.AddWithValue("IN_TK_ID", audit.Ticket_Id);
-                            cmd.Parameters.AddWithValue("IN_AUTH_ID", audit.Author_Id);
+        //                    cmd.Parameters.AddWithValue("IN_AUD_ID", audit.Id);
+        //                    cmd.Parameters.AddWithValue("IN_TK_ID", audit.Ticket_Id);
+        //                    cmd.Parameters.AddWithValue("IN_AUTH_ID", audit.Author_Id);
 
-                            cmd.ExecuteNonQuery();
-                            tran.Commit();
-                        }
-                        catch (Exception)
-                        {
+        //                    cmd.ExecuteNonQuery();
+        //                    tran.Commit();
+        //                }
+        //                catch (Exception)
+        //                {
 
-                            throw;
-                        }
+        //                    throw;
+        //                }
 
 
-                    }
-                }
-            }
-        }
+        //            }
+        //        }
+        //    }
+        //}
 
 
         #endregion

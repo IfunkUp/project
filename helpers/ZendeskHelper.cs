@@ -42,6 +42,7 @@ namespace SyncWPF
         public static async Task<List<User>> GetUsers()
         {
             var users = new List<User>();
+            var max = s_Client.Users.GetAllUsers().Count;
             var response = await s_Client.Users.GetAllUsersAsync();
             do
             {
@@ -51,7 +52,7 @@ namespace SyncWPF
                     response = await s_Client.Users.GetByPageUrlAsync<GroupUserResponse>(response.NextPage);
                 }
 
-            } while (response.NextPage != null);
+            } while (users.Count() < max);
             return users;
         }
 
@@ -170,43 +171,7 @@ namespace SyncWPF
             return ListAudit;
         }
 
-        public static User GetUser(long id)
-        {
-            
-            var page = "";
-            var user = new User();
-            var s_Client = new RestClient(s_Url + "/");
-            s_Client.Authenticator = new HttpBasicAuthenticator(s_UserName, s_PassWord);
-            page = "api/v2/users/" +id+ ".json";
-            var request = new RestRequest(page, Method.GET);
-            s_Client.AddDefaultHeader("Accept", "application/json");
-            IRestResponse response = s_Client.Execute(request);
-            var content = response.Content;
-            JToken Juser = JToken.Parse(content);
-
-            
-
-
-
-
-            foreach (JObject item in Juser.SelectToken("user"))
-            {
-                new User()
-                {
-                    Id = (Int64)item.SelectToken("id"),
-                Name = item.SelectToken("name").ToString(),
-                Email = item.SelectToken("email").ToString(),
-                OrganizationId = (Int64)item.SelectToken("organization_id"),
-                Phone = item.SelectToken("phone").ToString()
-
-            };
-            }
-
-            return user;
-            
-
-        }
-
+   
 
 
 
