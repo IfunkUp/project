@@ -19,7 +19,7 @@ using SyncWPF.Classes;
 
 namespace SyncWPF
 {
-    class Firebirdhelper
+    public static class Firebirdhelper
     {
         #region Connection
         // credentials of the database
@@ -28,8 +28,7 @@ namespace SyncWPF
             FbConnectionStringBuilder csb = new FbConnectionStringBuilder();
             csb.Database = "localhost";
             csb.Port = 3050;
-            //csb.Database = @"C:\Users\trainee\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //SMS
-            //csb.Database = @"X:\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //thuis
+       
             csb.Database = @"C:\Users\steve\OneDrive\dag\stage\stageproject\ZENDESK.FDB"; //book
             csb.UserID = "SYSDBA";
             csb.Password = "masterkey";
@@ -223,11 +222,13 @@ namespace SyncWPF
                         {
                             cmd.Parameters.AddWithValue("IN_ORG_ID", -1);
                         }
+                       
+                        cmd.Parameters.AddWithValue("IN_ROLE",user.Role);
 
                         cmd.ExecuteNonQuery();
                         tran.Commit();
 
-
+                        
 
 
                     }
