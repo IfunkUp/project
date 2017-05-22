@@ -180,10 +180,12 @@ namespace SyncWPF
                         cmd.CommandText = "INSERT_ORGANIZATION";
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        cmd.Parameters.AddWithValue("IN_ID", float.Parse(organization.Id.ToString()));
+                        cmd.Parameters.AddWithValue("IN_ID", (Int64) organization.Id);
                         cmd.Parameters.AddWithValue("IN_NAME", organization.Name);
                         cmd.Parameters.AddWithValue("IN_REGION", organization.Tags);
-                        cmd.Parameters.AddWithValue("IN_SALES_ID", 1);
+                        cmd.Parameters.AddWithValue("IN_Dom_name", organization.DomainNames);
+                        cmd.Parameters.AddWithValue("In_created", organization.CreatedAt);
+                        cmd.Parameters.AddWithValue("IN_UPdated", organization.UpdatedAt);
 
                         cmd.ExecuteNonQuery();
                         tran.Commit();
