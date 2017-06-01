@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyncWPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525"
+        Title="MainWindow" Height="450" Width="950"
         x:Name="Control">
     <Grid Name="grdMain">
         <Grid.RowDefinitions>
@@ -24,12 +24,45 @@
         <DockPanel Grid.Row="1" LastChildFill="True" Grid.ColumnSpan="2">
             <TextBlock Text="Start date" Margin="5"/>
             <DatePicker  Margin="5" SelectedDate="{Binding ElementName=Control, Path=SelectedDate, Mode=TwoWay}" FirstDayOfWeek="Monday"/>
-            <ProgressBar Width="auto" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=ProgressValue}" Maximum="{Binding ElementName=Control, Path=Maximum}" Foreground="{Binding ElementName=Control, Path=Color}" />
 
         </DockPanel>
-        <ListBox Grid.Row="2" Margin="5" Grid.ColumnSpan="2" DataContext="{Binding ElementName=Control, Mode=OneWay}" >
 
-        </ListBox>
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2">
+            <DockPanel  >
+                <Label Width="{Binding ElementName=Control, Path=LabelWidth}" Content="{Binding ElementName=Control, Path=OrgLabel}"/>
+                <ProgressBar MinHeight="25" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=OrganizationProgressValue}" Maximum="{Binding ElementName=Control, Path=OrganizationMaximum}" Foreground="{Binding ElementName=Control, Path=Color}" />
+            </DockPanel>
+
+            <DockPanel  >
+                <Label Width="{Binding ElementName=Control, Path=LabelWidth}" Content="{Binding ElementName=Control, Path=UserLabel}"/>
+                <ProgressBar MinHeight="25" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=UserProgressValue}" Maximum="{Binding ElementName=Control, Path=UserMax}" Foreground="{Binding ElementName=Control, Path=Color}" />
+            </DockPanel>
+            <DockPanel  >
+                <Label Width="{Binding ElementName=Control, Path=LabelWidth}" Content="{Binding ElementName=Control, Path=TicketLabel}"/>
+                <ProgressBar MinHeight="25" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=TicketsProgressValue}" Maximum="{Binding ElementName=Control, Path=TicketsMax}" Foreground="{Binding ElementName=Control, Path=Color}" />
+            </DockPanel>
+            <DockPanel  >
+                <Label Width="{Binding ElementName=Control, Path=LabelWidth}" Content="{Binding ElementName=Control, Path=RatingLabel}"/>
+                <ProgressBar MinHeight="25" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=SatisfactionProgressValue}" Maximum="{Binding ElementName=Control, Path=SatMax}" Foreground="{Binding ElementName=Control, Path=Color}" />
+            </DockPanel>
+            <DockPanel  >
+                <Label Width="{Binding ElementName=Control, Path=LabelWidth}" Content="{Binding ElementName=Control, Path=CategoryLabel}"/>
+                <ProgressBar MinHeight="25" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=CategoriesProgressValue}" Maximum="{Binding ElementName=Control, Path=CatMax}" Foreground="{Binding ElementName=Control, Path=Color}" />
+            </DockPanel>
+            <DockPanel  >
+                <Label Width="{Binding ElementName=Control, Path=LabelWidth}" Content="{Binding ElementName=Control, Path=SectionLabel}"/>
+                <ProgressBar MinHeight="25" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=SectionsProgressValue}" Maximum="{Binding ElementName=Control, Path=SecMax}" Foreground="{Binding ElementName=Control, Path=Color}" />
+            </DockPanel>
+            <DockPanel  >
+                <Label Width="{Binding ElementName=Control, Path=LabelWidth}" Content="{Binding ElementName=Control, Path=ArticleLabel}"/>
+                <ProgressBar MinHeight="25" HorizontalAlignment="Stretch" Margin="5" Value="{Binding ElementName=Control, Path=ArticlesProgressValue}" Maximum="{Binding ElementName=Control, Path=ArtMax}" Foreground="{Binding ElementName=Control, Path=Color}" />
+            </DockPanel>
+
+        </StackPanel>
+        
+        
+        
+        
         <StatusBar Grid.Row="3" Grid.ColumnSpan="2">
             <StatusBarItem>
                 <Label Name="lblDate"/>

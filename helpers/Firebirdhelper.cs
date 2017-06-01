@@ -156,7 +156,10 @@ namespace SyncWPF
                        
                         if (satisfaction.Created_at != null)
                             cmd.Parameters.AddWithValue("IN_SAT_CREATED", satisfaction.Created_at);
-                        
+                        if (satisfaction.Ticket_id != null)
+                        {
+                            cmd.Parameters.AddWithValue("in_sat_tk_id", satisfaction.Ticket_id);
+                        }
                         
 
 
